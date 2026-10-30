@@ -12,6 +12,9 @@
         <a class="brand" href="#main" aria-label="charity: water game home">
             <img src="img/cw_logo_horizontal.png" alt="charity: water">
         </a>
+        <a class="donate-link" href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit charity: water to donate (opens in a new tab)">
+            Donate <span aria-hidden="true">&rarr;</span>
+        </a>
     </header>
 
     <main id="main" class="page-layout">
@@ -28,6 +31,15 @@
 
             <div class="progress-track" role="progressbar" aria-label="Journey progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                 <span id="progress-fill"></span>
+            </div>
+
+            <div class="difficulty-controls" role="group" aria-label="Game difficulty">
+                <span class="difficulty-label">Difficulty</span>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-button" type="button" data-speed="0.16" aria-pressed="false">Easy</button>
+                    <button class="difficulty-button" type="button" data-speed="0.32" aria-pressed="true">Normal</button>
+                    <button class="difficulty-button" type="button" data-speed="0.64" aria-pressed="false">Hard</button>
+                </div>
             </div>
 
             <div id="game-board" class="game-board" aria-label="Game course. Move the raindrop left and right to avoid the rocks.">
@@ -54,6 +66,7 @@
                 <div id="raindrop" class="raindrop" role="img" aria-label="Your raindrop"></div>
                 <div class="well">
                     <img src="img/water-can-transparent.png" alt="Water can at the finish">
+                    <span id="well-water" class="well-water" aria-hidden="true"></span>
                 </div>
                 <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
                 <div id="finish-message" class="finish-message" aria-live="polite" hidden></div>

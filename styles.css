@@ -7,7 +7,7 @@
 	--yellow: #ffc907;
 	--rock: #376278;
 	--paper: #f4fbff;
-	font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	font-family: "Proxima Nova", Avenir, sans-serif;
 }
 
 * {
@@ -49,6 +49,25 @@ button {
 	height: auto;
 }
 
+.donate-link {
+	display: inline-flex;
+	min-height: 40px;
+	align-items: center;
+	gap: 8px;
+	padding: 0 15px;
+	border-radius: 4px;
+	background: var(--yellow);
+	color: var(--ink);
+	font-size: 13px;
+	font-weight: 800;
+	text-decoration: none;
+}
+
+.donate-link:hover,
+.donate-link:focus-visible {
+	background: #ffda4a;
+}
+
 .page-layout {
 	display: grid;
 	width: min(1120px, calc(100% - 40px));
@@ -65,7 +84,7 @@ button {
 
 h1 {
 	margin: 0;
-	font-family: Georgia, "Times New Roman", serif;
+	font-family: Georgia, serif;
 	font-size: 64px;
 	font-weight: 500;
 	line-height: 0.94;
@@ -138,6 +157,48 @@ h1 span {
 	transition: width 100ms linear;
 }
 
+.difficulty-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 12px;
+}
+
+.difficulty-label {
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.difficulty-buttons {
+	display: flex;
+	gap: 4px;
+	padding: 3px;
+	border: 1px solid #d5e5eb;
+	border-radius: 5px;
+	background: #f4fbff;
+}
+
+.difficulty-button {
+	min-width: 62px;
+	min-height: 30px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.difficulty-button[aria-pressed="true"] {
+	background: var(--deep-blue);
+	color: white;
+}
+
+.difficulty-button:hover:not([aria-pressed="true"]) {
+	background: #e5f4fb;
+}
+
 .game-board {
 	position: relative;
 	height: clamp(390px, 62vh, 570px);
@@ -180,6 +241,47 @@ h1 span {
 	transition: left 90ms ease-out;
 }
 
+.raindrop.disintegrating {
+	animation: drop-disintegrate 450ms ease-out forwards;
+}
+
+.raindrop.pouring {
+	animation: drop-pour 550ms ease-in forwards;
+}
+
+@keyframes drop-pour {
+	to {
+		opacity: 0;
+		transform: translateX(-50%) rotate(-45deg) translateY(12px) scale(0.5);
+	}
+}
+
+.drop-fragment {
+	position: absolute;
+	z-index: 6;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #2e9df7;
+	box-shadow: 0 0 7px rgb(46 157 247 / 70%);
+	transform: translate(-50%, -50%);
+	animation: fragment-scatter 550ms ease-out forwards;
+}
+
+@keyframes drop-disintegrate {
+	to {
+		opacity: 0;
+		transform: translateX(-50%) rotate(-45deg) scale(0.2);
+	}
+}
+
+@keyframes fragment-scatter {
+	to {
+		opacity: 0;
+		transform: translate(-50%, -50%) translate(var(--drift-x), var(--drift-y)) scale(0.2);
+	}
+}
+
 .multiplier {
 	position: absolute;
 	z-index: 2;
@@ -199,6 +301,21 @@ h1 span {
 
 .multiplier.collected {
 	display: none;
+}
+
+.multiplier.popping {
+	animation: multiplier-pop 360ms ease-out forwards;
+}
+
+@keyframes multiplier-pop {
+	45% {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1.45);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.15);
+	}
 }
 
 .raindrop::after {
@@ -223,10 +340,39 @@ h1 span {
 }
 
 .well img {
+	position: relative;
+	z-index: 1;
 	display: block;
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
+	transition: opacity 200ms linear;
+}
+
+.well.filled img {
+	opacity: 0.58;
+}
+
+.well-water {
+	position: absolute;
+	z-index: 0;
+	bottom: 21.5%;
+	left: 36.5%;
+	width: 26.5%;
+	height: 0;
+	border-radius: 2px 2px 4px 4px;
+	background: linear-gradient(180deg, #72d8f5, #2e9df7 75%, #1476bf);
+	opacity: 0.92;
+}
+
+.well.filled .well-water {
+	animation: can-fill 1.4s ease-out forwards;
+}
+
+@keyframes can-fill {
+	to {
+		height: 56%;
+	}
 }
 
 .confetti-layer {
@@ -267,7 +413,7 @@ h1 span {
 	padding: 24px;
 	background: rgb(18 48 74 / 62%);
 	color: white;
-	font-family: Georgia, "Times New Roman", serif;
+	font-family: Georgia, serif;
 	font-size: 36px;
 	text-align: center;
 }
@@ -278,7 +424,7 @@ h1 span {
 
 .finish-message small {
 	max-width: 270px;
-	font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	font-family: "Proxima Nova", Avenir, sans-serif;
 	font-size: 13px;
 	line-height: 1.5;
 }
@@ -410,6 +556,10 @@ button:focus-visible,
 	.game-board {
 		height: min(60vh, 540px);
 		min-height: 390px;
+	}
+
+	.difficulty-controls {
+		justify-content: space-between;
 	}
 }
 

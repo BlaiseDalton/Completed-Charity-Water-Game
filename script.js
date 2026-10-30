@@ -4,11 +4,14 @@ const statusMessage = document.querySelector('#game-status');
 const progressTrack = document.querySelector('.progress-track');
 const progressFill = document.querySelector('#progress-fill');
 const scoreValue = document.querySelector('#score-value');
+const well = document.querySelector('.well');
+const wellWater = document.querySelector('#well-water');
 const finishMessage = document.querySelector('#finish-message');
 const confettiLayer = document.querySelector('#confetti-layer');
 const startButton = document.querySelector('#start-button');
 const resetButton = document.querySelector('#reset-button');
 const moveButtons = document.querySelectorAll('.move-button');
+const difficultyButtons = document.querySelectorAll('.difficulty-button');
 const rocks = document.querySelectorAll('.rock');
 const multipliers = document.querySelectorAll('.multiplier');
 
@@ -17,6 +20,7 @@ let progress = 0;
 let points = 100;
 let gameTimer;
 let isPlaying = false;
+let progressPerTick = 0.24;
 
 function showConfetti() {
 	const colors = ['#ffc907', '#2e9df7', '#4fcb53', '#ff902a', '#f16061'];
@@ -76,6 +80,8 @@ function endGame(didWin) {
 
 	if (didWin) {
 		statusMessage.textContent = 'You made it to the well!';
+		well.classList.add('filled');
+		raindrop.classList.add('pouring');
 		finishMessage.innerHTML = `A drop made a difference.<small>You finished with ${points} points.</small>`;
 		startButton.innerHTML = 'Play again <span aria-hidden="true">&rarr;</span>';
 		showConfetti();
@@ -85,7 +91,9 @@ function endGame(didWin) {
 		startButton.innerHTML = 'Try again <span aria-hidden="true">&rarr;</span>';
 	}
 
-	finishMessage.hidden = false;
+	if (!didWin) {
+		finishMessage.hidden = false;
+	}
 	startButton.focus();
 }
 
@@ -99,6 +107,25 @@ function checkForCollision() {
 			&& dropBounds.top < rockBounds.bottom
 			&& dropBounds.bottom > rockBounds.top;
 	});
+}
+
+function disintegrateRaindrop() {
+	const dropBounds = raindrop.getBoundingClientRect();
+	const boardBounds = board.getBoundingClientRect();
+	raindrop.classList.add('disintegrating');
+
+	// Scatter small DOM fragments from the collision point.
+	for (let index = 0; index < 8; index += 1) {
+		const angle = Math.PI * 2 * index / 8;
+		const fragment = document.createElement('span');
+		fragment.className = 'drop-fragment';
+		fragment.style.left = `${dropBounds.left - boardBounds.left + dropBounds.width / 2}px`;
+		fragment.style.top = `${dropBounds.top - boardBounds.top + dropBounds.height / 2}px`;
+		fragment.style.setProperty('--drift-x', `${Math.cos(angle) * 42}px`);
+		fragment.style.setProperty('--drift-y', `${Math.sin(angle) * 42}px`);
+		fragment.addEventListener('animationend', () => fragment.remove(), { once: true });
+		board.append(fragment);
+	}
 }
 
 function collectMultipliers() {
@@ -117,7 +144,11 @@ function collectMultipliers() {
 
 		if (touchesMultiplier) {
 			multiplier.dataset.collected = 'true';
-			multiplier.classList.add('collected');
+			multiplier.classList.add('popping');
+			multiplier.addEventListener('animationend', () => {
+				multiplier.classList.remove('popping');
+				multiplier.classList.add('collected');
+			}, { once: true });
 			points *= 2;
 			updateScore();
 			statusMessage.textContent = '2x multiplier collected!';
@@ -126,12 +157,13 @@ function collectMultipliers() {
 }
 
 function advanceGame() {
-	progress += 0.24;
+	progress += progressPerTick;
 	placeRaindrop();
 	updateProgress();
 	collectMultipliers();
 
 	if (checkForCollision()) {
+		disintegrateRaindrop();
 		points = Math.max(0, points - 10);
 		updateScore();
 		endGame(false);
@@ -148,12 +180,17 @@ function advanceGame() {
 function resetGame() {
 	clearInterval(gameTimer);
 	confettiLayer.replaceChildren();
+	board.querySelectorAll('.drop-fragment').forEach((fragment) => fragment.remove());
+	raindrop.classList.remove('disintegrating');
+	raindrop.classList.remove('pouring');
+	well.classList.remove('filled');
 	isPlaying = false;
 	dropPosition = 50;
 	progress = 0;
 	points = 100;
 	multipliers.forEach((multiplier) => {
 		multiplier.dataset.collected = 'false';
+		multiplier.classList.remove('popping');
 		multiplier.classList.remove('collected');
 	});
 	finishMessage.hidden = true;
@@ -182,6 +219,13 @@ startButton.addEventListener('click', () => {
 
 resetButton.addEventListener('click', resetGame);
 
+wellWater.addEventListener('animationend', () => {
+	if (well.classList.contains('filled')) {
+		statusMessage.textContent = 'The water can is full!';
+		finishMessage.hidden = false;
+	}
+});
+
 document.addEventListener('keydown', (event) => {
 	if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
 		if (isPlaying) {
@@ -194,6 +238,15 @@ document.addEventListener('keydown', (event) => {
 moveButtons.forEach((button) => {
 	button.addEventListener('click', () => {
 		moveRaindrop(Number(button.dataset.direction));
+	});
+});
+
+difficultyButtons.forEach((button) => {
+	button.addEventListener('click', () => {
+		progressPerTick = Number(button.dataset.speed);
+		difficultyButtons.forEach((difficultyButton) => {
+			difficultyButton.setAttribute('aria-pressed', `${difficultyButton === button}`);
+		});
 	});
 });
 
